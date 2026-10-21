@@ -6,6 +6,8 @@ A practical UX research methodology guide and toolkit for UX designers working w
 
 The [framework workspace](framework/README.md) holds the v0.5 product brief, project launch checklist, research builder specification, prioritised backlog, decisions and audits. These are editable Markdown files stored with the repository, available locally and on GitHub. Proposed v0.5 behaviour is labelled separately from the current application.
 
+To resume in a new session, start with the [session handoff](framework/session-handoff.md). Repository [agent instructions](AGENTS.md) point future work to the same saved context.
+
 ## What it does
 
 - Seven research stages: UX readiness, kickoff and framing, planning, data collection, analysis, restitution and decisions, retrospective and reuse.

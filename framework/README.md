@@ -6,8 +6,11 @@ A repository-based workspace for organising Research Compass: product direction,
 
 ## Start here
 
+**Returning in a new session? Read the [session handoff](session-handoff.md) first.** It records the implemented baseline, confirmed direction, validation and next concrete task.
+
 | Page | Purpose | Status |
 | --- | --- | --- |
+| [Session handoff](session-handoff.md) | Resume without reconstructing the conversation | Current at session close |
 | [Product direction](vision.md) | Who we help, project launch scope and the basket concept | Direction confirmed; design to refine |
 | [Project launch](project-launch.md) | Starting from zero and checking crucial information | Draft specification |
 | [Research builder](research-builder.md) | Select work and assemble a tailored research plan with support | Draft specification |
