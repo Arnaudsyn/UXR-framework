@@ -5,6 +5,7 @@ A practical UX research methodology guide and toolkit for UX designers working w
 ## What it does
 
 - Seven research stages: UX readiness, kickoff and framing, planning, data collection, analysis, restitution and decisions, retrospective and reuse.
+- Context-driven objectives in every stage, with supporting guides nested beneath each objective. Intent, user access, constraints, selected methods and recorded difficulties shape the suggested objectives. Templates are reached through their guides or the dedicated menu.
 - Twelve methodology guides covering collection, qualitative and quantitative analysis, evidence confidence, sampling and research design. Each includes what to collect, practical steps, limitations and an illustrative example.
 - A method chooser based on the decision, available material, user access and constraints; options explain their prerequisites.
 - Twelve editable templates with autosaved drafts and Markdown downloads.
@@ -75,7 +76,7 @@ node build-standalone.cjs
 node check-flow.cjs
 ```
 
-The checks cover stage / activity rendering, conditional homepage order, visible completion, context routing, escaped user content, saved notes, workshop capture, actual file export / import in a fresh session, invalid-import handling, guide and template links, method prerequisites, stage-scoped advice, saved template drafts and resource search. They do not verify browser layout or end-to-end accessibility.
+The checks cover stage / activity rendering, conditional homepage order, visible completion, context routing, escaped user content, saved notes, workshop capture, actual file export / import in a fresh session, invalid-import handling, context-driven objectives and nested guide hierarchy, guide and template links, method prerequisites, stage-scoped advice, saved template drafts and resource search. They do not verify browser layout or end-to-end accessibility.
 
 The standalone `research-compass.html` is a snapshot of the current version. If editing the source, use `docs/` as the source of truth; run `node build-standalone.cjs` before distributing an updated copy.
 
