@@ -1,0 +1,87 @@
+# Research Compass · UXR framework
+
+A practical research facilitation toolkit for UX designers working with a product team. Originally prototyped on GPT Sites; this repository contains the portable HTML, CSS and JavaScript source.
+
+## What it does
+
+- Seven research stages: UX readiness, kickoff and framing, planning, data collection, analysis, restitution and decisions, retrospective and reuse.
+- Twenty practical activities with preparation guidance, agendas, questions and expected outputs.
+- Direct navigation and activity search, with every section available immediately.
+- A short project-context form carried into each activity, with rule-based starting-point suggestions.
+- Standard and constrained project routes, explicit evidence limitations and decision checkpoints.
+- Workshop mode with a discussion timer, session notes, output capture and completion checks.
+- Multiple projects saved in the browser, Markdown exports and JSON backup / restore.
+
+## Publish with GitHub Pages
+
+In this repository, open **Settings → Pages** and choose:
+
+- Source: **Deploy from a branch**
+- Branch: **main**
+- Folder: **/docs**
+
+Save the settings. GitHub will publish the contents of `docs/`. The project-site address is expected to be:
+
+https://arnaudsyn.github.io/UXR-framework/
+
+That address becomes usable after Pages is enabled and the first deployment succeeds. Subsequent changes to `docs/` on `main` are published automatically. There is no installation or build step. Asset paths are relative so the site works under the repository's URL path.
+
+See [GitHub's publishing-source documentation](https://docs.github.com/en/pages/getting-started-with-github-pages/configuring-a-publishing-source-for-your-github-pages-site).
+
+## Run locally
+
+From the repository root:
+
+```sh
+python3 -m http.server 4173 --directory docs
+```
+
+Open http://localhost:4173. For a portable offline copy, open `research-compass.html` directly in a browser. Browser storage behaviour for local files can vary; export a backup before moving or replacing a local copy.
+
+## Move saved projects from GPT Sites
+
+Project data is stored in the visitor's browser, separately for each site address. Moving the website source does not transfer saved projects automatically.
+
+1. Open the existing GPT Sites version in the browser where your project is saved.
+2. Choose **Export project → Project backup** and save the JSON file.
+3. Open the GitHub Pages version.
+4. Choose **Export project → Restore a project backup** and select that file.
+
+Restore each project you want to bring across. A restore adds a separate project and preserves existing work. The old GPT Sites deployment is not removed by this migration.
+
+## Edit and check
+
+The deployed source lives in:
+
+```text
+docs/index.html   Page structure and dialogs
+docs/styles.css   Layout, colours and responsive styles
+docs/content.js   Stages and facilitation content
+docs/app.js       Navigation, project storage, workshop mode and exports
+```
+
+Run the existing state and rendering checks with Node.js:
+
+```sh
+node --check docs/app.js
+node --check docs/content.js
+node check-flow.cjs
+```
+
+The checks cover stage / activity rendering, context routing, escaped user content, saved notes, completion, workshop capture, backup restore and search. They do not verify browser layout or end-to-end accessibility.
+
+The standalone `research-compass.html` is a snapshot of the initial transferred version. If editing the source, use `docs/` as the source of truth; regenerate the standalone snapshot before distributing an updated copy.
+
+## Data and access
+
+The toolkit has no backend, shared database, AI service or team synchronisation. Project details, notes and progress stay in browser local storage unless the visitor exports them. Keep identifiable participant evidence in an approved research repository and link to it in the toolkit.
+
+This GitHub repository is public. A public GitHub Pages deployment does not inherit the owner-only access controls of the original GPT Sites deployment. Publishing the toolkit does not publish visitors' browser-stored projects.
+
+No GPT Sites credentials, hosting identifiers, `.openai` metadata, browser data or project exports are included in this repository.
+
+## Content provenance
+
+The toolkit is a facilitation adaptation of the user's **UXR Guilde board / ResearchFramework**, visually inspected on 16 October 2026. It preserves the observed seven-stage sequence, standard vs constrained routes, reuse of evidence, recruitment review, gap-resolution loops, traceable insights, decision-focused restitution and archiving.
+
+Activity titles, durations, agendas, form fields and prose are authored facilitation guidance rather than a complete literal transcription of every FigJam node or linked template. The original board was not edited.
