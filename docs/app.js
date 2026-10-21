@@ -144,10 +144,45 @@
   function save(){project().updatedAt=new Date().toISOString();try{localStorage.setItem(KEY,JSON.stringify(db));storageFailed=false;}catch{storageFailed=true;}updateSaveState();}
   function updateSaveState(){const el=$('#saveState');el.textContent=storageFailed?'● Not saved · export a backup':'● Saved in this browser';el.classList.toggle('storage-warning',storageFailed);}
   function closeDialog(id){document.getElementById(id).close();}
+  const contextResetFields=['context','hasContext','problemTypes','customProblems','profiles','selectedMethods','issues','methodSelection'];
+  let pendingProjectAction=null,projectUndo=null;
+  const cloneData=value=>JSON.parse(JSON.stringify(value));
+  const projectSignature=p=>JSON.stringify({...p,updatedAt:null});
+  function showProjectManager(){document.getElementById('managedProjectName').textContent=project().context.name;$('#projectManagerDialog').showModal();}
+  function requestProjectAction(kind){const p=project();pendingProjectAction={kind,id:p.id};$('#projectActionTitle').textContent=kind==='reset'?'Reset project context?':'Delete this project?';$('#projectActionName').textContent=p.context.name;$('#projectActionDetails').innerHTML=kind==='reset'?'<p>Clear the problem choices, custom problems, decision, user profiles and counts, finish date, constraints, selected methods and recorded research difficulties.</p><p><strong>Keep:</strong> the project name, activity notes, template drafts, checklists and completion progress.</p>':'<p>Remove this project from this browser, including its context, notes, template drafts, checklists and progress.</p><p>Export a project file first if you may need it later. Downloaded project files are kept.</p>';$('#projectActionConfirm').textContent=kind==='reset'?'Reset context':'Delete project';$('#projectActionDialog').showModal();}
+  function finishProjectMutation(before,previousUndo,message){save();if(storageFailed){db=before;projectUndo=previousUndo;render();toast('The change could not be saved. Nothing was changed. Export a backup and try again.');return false;}activeTab='prepare';location.hash='#overview';render();window.scrollTo(0,0);toast(message);return true;}
+  function confirmProjectAction(){
+    if(!$('#projectActionDialog').open||!pendingProjectAction)return;
+    const request=pendingProjectAction;pendingProjectAction=null;
+    for(const id of ['projectActionDialog','projectManagerDialog','contextDialog'])if($('#'+id).open)closeDialog(id);
+    if(request.id!==db.activeId){toast('The active project changed. Open project options again.');return;}
+    const p=project(),before=cloneData(db),previousUndo=projectUndo;
+    if(workshop){stopTimer();workshop=null;}
+    if(request.kind==='reset'){
+      const previous=cloneData(Object.fromEntries(contextResetFields.map(key=>[key,p[key]]))),fresh=blank();fresh.context.name=p.context.name;
+      for(const key of contextResetFields)p[key]=fresh[key];
+      projectUndo={kind:'reset',id:p.id,name:p.context.name,previous};
+      finishProjectMutation(before,previousUndo,'Project context reset. Notes, drafts and progress were kept.');
+    }else if(request.kind==='delete'){
+      const index=db.projects.findIndex(x=>x.id===p.id),removed=cloneData(p);db.projects.splice(index,1);let placeholder=null;
+      if(!db.projects.length){placeholder=blank();db.projects.push(placeholder);}
+      db.activeId=db.projects[Math.min(index,db.projects.length-1)].id;
+      projectUndo={kind:'delete',name:p.context.name,removed,index,placeholder:null};
+      if(finishProjectMutation(before,previousUndo,placeholder?'Project deleted. A blank project is ready.':'Project deleted.'))if(placeholder)projectUndo.placeholder={id:placeholder.id,signature:projectSignature(placeholder)};
+    }
+  }
+  function renderProjectUndo(){const host=$('#projectUndo');host.hidden=!projectUndo;host.innerHTML=projectUndo?`<p><strong>${projectUndo.kind==='reset'?'Context reset':'Project deleted'}</strong> ${esc(projectUndo.name)}<small>Undo is available until reload or the next reset / deletion.</small></p><div><button class="button small" data-action="project-undo">Undo ${projectUndo.kind==='reset'?'reset':'deletion'} ↶</button><button class="button small quiet" data-action="dismiss-project-undo" aria-label="Dismiss undo">Dismiss</button></div>`:'';}
+  function undoProjectMutation(){
+    if(!projectUndo)return;if(workshop){stopTimer();workshop=null;}const record=projectUndo,before=cloneData(db);
+    if(record.kind==='reset'){const target=db.projects.find(p=>p.id===record.id);if(!target){projectUndo=null;renderProjectUndo();return;}Object.assign(target,cloneData(record.previous));db.activeId=target.id;}
+    else {if(db.projects.some(p=>p.id===record.removed.id))return;if(record.placeholder){const placeholder=db.projects.find(p=>p.id===record.placeholder.id);if(placeholder&&projectSignature(placeholder)===record.placeholder.signature)db.projects=db.projects.filter(p=>p.id!==placeholder.id);}db.projects.splice(Math.min(record.index,db.projects.length),0,cloneData(record.removed));db.activeId=record.removed.id;}
+    projectUndo=null;finishProjectMutation(before,record,record.kind==='reset'?'Project context restored.':'Project restored.');
+  }
   function showContext(){const f=$('#contextForm'),p=project();$('#problemChoices').innerHTML=problemOptions.map(pr=>`<label><input type="checkbox" name="problemTypes" value="${pr.id}" data-problem-type ${p.problemTypes.includes(pr.id)?'checked':''}><span>${pr.label}</span></label>`).join('');renderProfileRows(p.profiles);$('#profileDetails').open=p.profiles.length>0||!!p.context.users;f.elements.namedItem('customProblems').value=p.customProblems.join('\n');$('#customProblemDetails').open=p.customProblems.length>0;$('#problemDetails').open=!!p.context.problem;$('#contextConstraints').open=p.context.access!=='unknown'||p.context.constraint!=='open'||p.context.intent!=='explore'||!!p.context.timing;for(const [k,v] of Object.entries(project().context)){if(f.elements.namedItem(k))f.elements.namedItem(k).value=v;}renderProblemPreview(f);contextPlanningPreview();$('#contextDialog').showModal();}
   function recommendation(){const c=project().context;const limited=c.constraint==='locked'||c.constraint==='partial'||c.access==='none'||c.access==='indirect';let target=phaseById(c.stage)?c.stage:'readiness';return {target,limited,label:limited?'A focused route, with explicit limits':'A standard research route',text:limited?'Start from your current stage. Use constrained-project alignment to agree what can still change, and carry evidence limitations into the final decision.':'Start from your current stage. Reuse what is already known, and revisit earlier activities only where an agreement or evidence is missing.'};}
   function route(){const parts=location.hash.slice(1).split('/');return {kind:parts[0]||'overview',id:parts[1]};}
   function updateChrome(){
+    renderProjectUndo();
     const p=project(),r=route(),total=activities.length;
     $('#projectSelect').innerHTML=db.projects.map(x=>`<option value="${esc(x.id)}" ${x.id===p.id?'selected':''}>${esc(x.context.name)}</option>`).join('');
     $('.nav-home').classList.toggle('active',r.kind==='overview');
@@ -195,6 +230,13 @@
     const close=event.target.closest('[data-close]');if(close){closeDialog(close.dataset.close);return;}
     const tab=event.target.closest('[data-tab]');if(tab){setTab(tab.dataset.tab);return;}
     const el=event.target.closest('[data-action]');if(!el)return;const action=el.dataset.action,id=el.dataset.id;
+    if(action==='manage-project')showProjectManager();
+    if(action==='request-reset-context')requestProjectAction('reset');
+    if(action==='request-delete-project')requestProjectAction('delete');
+    if(action==='confirm-project-action')confirmProjectAction();
+    if(action==='cancel-project-action'){pendingProjectAction=null;closeDialog('projectActionDialog');}
+    if(action==='project-undo')undoProjectMutation();
+    if(action==='dismiss-project-undo'){projectUndo=null;renderProjectUndo();}
     if(action==='context'){event.preventDefault();showContext();}
     if(action==='export')$('#exportDialog').showModal();
     if(action==='import')$('#importFile').click();

@@ -18,6 +18,7 @@ A practical UX research methodology guide and toolkit for UX designers working w
 - A short project-context form carried into each activity, with rule-based starting-point suggestions.
 - Standard and constrained project routes, explicit evidence limitations and decision checkpoints.
 - Workshop mode with a discussion timer, session notes, output capture and completion checks.
+- Project options for resetting context while keeping activity work, or deleting a whole project. Both ask for confirmation and offer one-step Undo until reload or the next reset / deletion.
 - Multiple projects with visible JSON export and import controls, plus Markdown briefs. Project files include context, notes, checklists, session scratchpads, completion status, method selections, difficulties and template drafts, and can restore work in a fresh browser.
 
 ## Publish with GitHub Pages
