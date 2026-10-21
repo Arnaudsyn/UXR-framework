@@ -1,16 +1,20 @@
 # Research Compass · UXR framework
 
-A practical research facilitation toolkit for UX designers working with a product team. Originally prototyped on GPT Sites; this repository contains the portable HTML, CSS and JavaScript source.
+A practical UX research methodology guide and toolkit for UX designers working with a product team. Originally prototyped on GPT Sites; this repository contains the portable HTML, CSS and JavaScript source.
 
 ## What it does
 
 - Seven research stages: UX readiness, kickoff and framing, planning, data collection, analysis, restitution and decisions, retrospective and reuse.
+- Twelve methodology guides covering collection, qualitative and quantitative analysis, evidence confidence, sampling and research design. Each includes what to collect, practical steps, limitations and an illustrative example.
+- A method chooser based on the decision, available material, user access and constraints; options explain their prerequisites.
+- Twelve editable templates with autosaved drafts and Markdown downloads.
+- Stage-specific advice for thirteen common difficulties, including missing users, messy or conflicting evidence and unsupported improvement claims.
 - Twenty practical activities with preparation guidance, agendas, questions and expected outputs.
 - Direct navigation and activity search, with every section available immediately.
 - A short project-context form carried into each activity, with rule-based starting-point suggestions.
 - Standard and constrained project routes, explicit evidence limitations and decision checkpoints.
 - Workshop mode with a discussion timer, session notes, output capture and completion checks.
-- Multiple projects with visible JSON export and import controls, plus Markdown briefs. Project files include context, notes, checklists, session scratchpads and completion status, and can restore work in a fresh browser.
+- Multiple projects with visible JSON export and import controls, plus Markdown briefs. Project files include context, notes, checklists, session scratchpads, completion status, method selections, difficulties and template drafts, and can restore work in a fresh browser.
 
 ## Publish with GitHub Pages
 
@@ -56,7 +60,8 @@ The deployed source lives in:
 ```text
 docs/index.html   Page structure and dialogs
 docs/styles.css   Layout, colours and responsive styles
-docs/content.js   Stages and facilitation content
+docs/content.js   Stages and activity content
+docs/knowledge.js Method guides, templates and contextual advice
 docs/app.js       Navigation, project storage, workshop mode and exports
 ```
 
@@ -65,11 +70,12 @@ Run the existing state and rendering checks with Node.js:
 ```sh
 node --check docs/app.js
 node --check docs/content.js
+node --check docs/knowledge.js
 node build-standalone.cjs
 node check-flow.cjs
 ```
 
-The checks cover stage / activity rendering, conditional homepage order, visible completion, context routing, escaped user content, saved notes, workshop capture, actual file export / import in a fresh session, invalid-import handling and search. They do not verify browser layout or end-to-end accessibility.
+The checks cover stage / activity rendering, conditional homepage order, visible completion, context routing, escaped user content, saved notes, workshop capture, actual file export / import in a fresh session, invalid-import handling, guide and template links, method prerequisites, stage-scoped advice, saved template drafts and resource search. They do not verify browser layout or end-to-end accessibility.
 
 The standalone `research-compass.html` is a snapshot of the current version. If editing the source, use `docs/` as the source of truth; run `node build-standalone.cjs` before distributing an updated copy.
 
@@ -81,6 +87,8 @@ This GitHub repository is public. A public GitHub Pages deployment does not inhe
 
 No GPT Sites credentials, hosting identifiers, `.openai` metadata, browser data or project exports are included in this repository.
 
-## Facilitation guidance
+## Methodology and facilitation guidance
 
-Session timings, agendas, form fields and prose provide suggested facilitation guidance. Adapt them to the project, the team and the decision to support.
+Guides and template structures were developed from the supplied UXR Creator, UXR-activities and UXR-Framework-reference PDFs. The private reference files are not included in this public repository. Maze’s UX research guide is linked as further reading. Examples are illustrative, not findings from a real project.
+
+Method suggestions are deterministic guidance based on explicit choices. They do not analyse project evidence or certify a study design. Advice appears from recorded difficulties and project constraints; update those inputs as the study changes. Session timings, agendas, measures and templates should be adapted to the question, the team, the decision and the applicable research practices.
