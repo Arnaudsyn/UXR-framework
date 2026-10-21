@@ -20,7 +20,7 @@ In this repository, open **Settings → Pages** and choose:
 - Branch: **main**
 - Folder: **/docs**
 
-Save the settings. GitHub will publish the contents of `docs/`. The project-site address is expected to be:
+Save the settings. GitHub will publish the contents of `docs/`. Publishing from **main → /(root)** also works: the root `index.html` forwards to `docs/` and preserves section links and query parameters. The project-site address is expected to be:
 
 https://arnaudsyn.github.io/UXR-framework/
 
