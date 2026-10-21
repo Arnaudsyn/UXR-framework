@@ -1,0 +1,58 @@
+{
+  "reviewedVersion": "0.3.4",
+  "reviewedCommit": "1fd0686e1f374844b652c024dd11019cf9fca0f8",
+  "fixtureDate": "2026-10-21T12:00:00Z",
+  "kind": "Current-state diagnostic; passing assertions reproduce gaps, not v0.5 acceptance tests",
+  "observations": [
+    {
+      "id": "A01",
+      "title": "Stage recommendation does not advance when work is complete",
+      "evidence": "Both readiness activities completed: the homepage CTA still points to readiness, while the journey has no Start here card."
+    },
+    {
+      "id": "A02",
+      "title": "Completion and moving-on checks are independent",
+      "evidence": "An empty activity can be marked completed; checking every moving-on criterion does not complete it or produce a next action. No override rationale is recorded."
+    },
+    {
+      "id": "A03",
+      "title": "Conditional activities prevent route-specific completion",
+      "evidence": "An open project remains at 2/3 kickoff activities until constrained alignment is completed. Sharing remains at 2/3 without resolving a blocker, even if no blocker exists. There is no not-applicable status."
+    },
+    {
+      "id": "A04",
+      "title": "Deadlines do not change method recommendations or the activity route",
+      "evidence": "A two-weekday deadline and a long deadline produce byte-identical method cards and planning activities. The short-time warning does not alter the recommended work."
+    },
+    {
+      "id": "A05",
+      "title": "Missing decision is not automatically detected",
+      "evidence": "With no decision recorded, collection still presents direct-user guides and sessions. The unclear-question difficulty is neither inferred nor offered for that stage."
+    },
+    {
+      "id": "A06",
+      "title": "Access blocker disappears in kickoff and sharing advice",
+      "evidence": "The same no-access state shows a warning in planning, but not kickoff, sharing or the homepage. A generic focused-route label is not a persistent escalation."
+    },
+    {
+      "id": "A07",
+      "title": "Advice order can hide a warning behind two advice cards",
+      "evidence": "Two earlier advice entries take the visible slots; the no-user-access warning is behind See all 3 relevant advice cards. No severity or decision-impact sorting occurs."
+    },
+    {
+      "id": "A08",
+      "title": "Template work is disconnected from outcome and activity progress",
+      "evidence": "A fully populated framing draft leaves all activity checks and completion unchanged. This is not evidence that the draft is valid; the missing capability is an explicit review-and-link action."
+    },
+    {
+      "id": "A09",
+      "title": "Timeline ignores completed work",
+      "evidence": "Completing every activity leaves the same readiness-through-sharing schedule. The timeline uses the declared stage, not remaining work."
+    },
+    {
+      "id": "A10",
+      "title": "Objectives have no outcome controls and activities have no applicability state",
+      "evidence": "Objectives contain guide links only. The stored project has no outcome, escalation, route or multi-status activity record; none of the related actions exist."
+    }
+  ]
+}
