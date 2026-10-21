@@ -10,7 +10,7 @@ A practical research facilitation toolkit for UX designers working with a produc
 - A short project-context form carried into each activity, with rule-based starting-point suggestions.
 - Standard and constrained project routes, explicit evidence limitations and decision checkpoints.
 - Workshop mode with a discussion timer, session notes, output capture and completion checks.
-- Multiple projects saved in the browser, Markdown exports and JSON backup / restore.
+- Multiple projects with visible JSON export and import controls, plus Markdown briefs. Project files include context, notes, checklists, session scratchpads and completion status, and can restore work in a fresh browser.
 
 ## Publish with GitHub Pages
 
@@ -43,9 +43,9 @@ Open http://localhost:4173. For a portable offline copy, open `research-compass.
 Project data is stored in the visitor's browser, separately for each site address. Moving the website source does not transfer saved projects automatically.
 
 1. Open the existing GPT Sites version in the browser where your project is saved.
-2. Choose **Export project → Project backup** and save the JSON file.
+2. Choose **Export project → Export project (.json)** and save the JSON file.
 3. Open the GitHub Pages version.
-4. Choose **Export project → Restore a project backup** and select that file.
+4. Choose **Import project** and select that file.
 
 Restore each project you want to bring across. A restore adds a separate project and preserves existing work. The old GPT Sites deployment is not removed by this migration.
 
@@ -65,12 +65,13 @@ Run the existing state and rendering checks with Node.js:
 ```sh
 node --check docs/app.js
 node --check docs/content.js
+node build-standalone.cjs
 node check-flow.cjs
 ```
 
-The checks cover stage / activity rendering, context routing, escaped user content, saved notes, completion, workshop capture, backup restore and search. They do not verify browser layout or end-to-end accessibility.
+The checks cover stage / activity rendering, conditional homepage order, visible completion, context routing, escaped user content, saved notes, workshop capture, actual file export / import in a fresh session, invalid-import handling and search. They do not verify browser layout or end-to-end accessibility.
 
-The standalone `research-compass.html` is a snapshot of the initial transferred version. If editing the source, use `docs/` as the source of truth; regenerate the standalone snapshot before distributing an updated copy.
+The standalone `research-compass.html` is a snapshot of the current version. If editing the source, use `docs/` as the source of truth; run `node build-standalone.cjs` before distributing an updated copy.
 
 ## Data and access
 
@@ -80,8 +81,6 @@ This GitHub repository is public. A public GitHub Pages deployment does not inhe
 
 No GPT Sites credentials, hosting identifiers, `.openai` metadata, browser data or project exports are included in this repository.
 
-## Content provenance
+## Facilitation guidance
 
-The toolkit is a facilitation adaptation of the user's **UXR Guilde board / ResearchFramework**, visually inspected on 16 October 2026. It preserves the observed seven-stage sequence, standard vs constrained routes, reuse of evidence, recruitment review, gap-resolution loops, traceable insights, decision-focused restitution and archiving.
-
-Activity titles, durations, agendas, form fields and prose are authored facilitation guidance rather than a complete literal transcription of every FigJam node or linked template. The original board was not edited.
+Session timings, agendas, form fields and prose provide suggested facilitation guidance. Adapt them to the project, the team and the decision to support.

@@ -1,5 +1,4 @@
-/* Facilitation adaptation of the user's UXR Guilde board. Durations and session
-   sequences are suggested facilitation scaffolding, not verbatim source rules. */
+/* Practical facilitation guidance. Session timings are suggestions. */
 window.PHASES = [
 {id:'readiness',name:'UX readiness',question:'Can research happen properly?',color:'#438baf',tint:'#edf5f9',description:'Make space for research before committing to an approach.',output:'A shared understanding of the UX approach and the project’s constraints.'},
 {id:'kickoff',name:'Kickoff & framing',question:'What are we trying to learn and decide?',color:'#7860cb',tint:'#f1edfa',description:'Align the product team around the problem, the users and the decision.',output:'A design mandate with a clear problem, scope and decision to support.'},
