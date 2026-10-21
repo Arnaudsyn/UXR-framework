@@ -29,6 +29,7 @@ function boot(existing) {
   return {get,listeners,storage,navigate,clickAction,clickTab,context,downloads};
 }
 (async()=>{
+  assert.doesNotMatch(fs.readFileSync('research-compass.html','utf8'),/<(?:link[^>]*href|script[^>]*src)="(?:styles\.css|app\.js)/,'Standalone copy inlines versioned application assets');
   const app=boot(),html=()=>app.get('#main').innerHTML;
   assert.match(html(),/Good research starts/);
   assert.ok(html().indexOf('id="quickTitle"')<html().indexOf('id="journeyTitle"'),'No-context homepage puts starting shortcuts first');
