@@ -12,6 +12,8 @@ Updated 21 October 2026. **Confirmed direction** records explicit user requests.
 | D-04 | 2026-10-21 | Make research planning a builder: selected work enters a basket and yields a tailored plan with guides, templates and tips | User described the key research-planning use case |
 | D-05 | 2026-10-21 | Support entry at the beginning, middle or end; context should shape the route and expose escalation needs | User's v0.5 goals and audit request |
 | D-06 | 2026-10-21 | Retain guided activities as a central execution feature | User explicitly highlighted their value |
+| D-07 | 2026-10-21 | Use UXR-Framework-reference.pdf as the main reference for each step's identity, purpose and expected behaviour; the user's explicit direction takes precedence | User clarified the reference hierarchy |
+| D-08 | 2026-10-21 | Ask the user if doubt remains after consulting the main reference and their instructions, before committing the ambiguous interpretation | User requested clarification for unresolved doubt |
 
 ## Proposed design choices
 
