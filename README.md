@@ -12,6 +12,9 @@ A practical UX research methodology guide and toolkit for UX designers working w
 - Stage-specific advice for thirteen common difficulties, including missing users, messy or conflicting evidence and unsupported improvement claims.
 - Twenty practical activities with preparation guidance, agendas, questions and expected outputs.
 - Direct navigation and activity search, with every section available immediately.
+- Eight common product problems to select, plus up to ten custom problems. Problem choices inform stage objectives, suggest relevant methods and highlight activities; custom wording stays as context and is framed before selecting methods. Existing manual method choices are retained.
+- Repeatable persona / profile groups with separate group-size, reachable and planned participant / response counts. Counts inform coverage warnings without certifying a quantitative sample.
+- A finish date and provisional weekday timeline from the current stage through sharing, with time reserved for analysis. Dates and profile counts are included in project backups and Markdown exports.
 - A short project-context form carried into each activity, with rule-based starting-point suggestions.
 - Standard and constrained project routes, explicit evidence limitations and decision checkpoints.
 - Workshop mode with a discussion timer, session notes, output capture and completion checks.
@@ -76,7 +79,7 @@ node build-standalone.cjs
 node check-flow.cjs
 ```
 
-The checks cover stage / activity rendering, conditional homepage order, visible completion, context routing, escaped user content, saved notes, workshop capture, actual file export / import in a fresh session, invalid-import handling, context-driven objectives and nested guide hierarchy, guide and template links, method prerequisites, stage-scoped advice, saved template drafts and resource search. They do not verify browser layout or end-to-end accessibility.
+The checks cover stage / activity rendering, conditional homepage order, visible completion, context routing, escaped user content, saved notes, workshop capture, actual file export / import in a fresh session, invalid-import handling, problem choices and custom-issue restoration, context-driven objectives and nested guide hierarchy, guide and template links, method prerequisites, stage-scoped advice, saved template drafts and resource search. They do not verify browser layout or end-to-end accessibility.
 
 The standalone `research-compass.html` is a snapshot of the current version. If editing the source, use `docs/` as the source of truth; run `node build-standalone.cjs` before distributing an updated copy.
 
