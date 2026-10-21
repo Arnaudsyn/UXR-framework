@@ -6,9 +6,10 @@ A practical UX research methodology guide and toolkit for UX designers working w
 
 - Seven research stages: UX readiness, kickoff and framing, planning, data collection, analysis, restitution and decisions, retrospective and reuse.
 - Context-driven objectives in every stage, with supporting guides nested beneath each objective. Intent, user access, constraints, selected methods and recorded difficulties shape the suggested objectives. Templates are reached through their guides or the dedicated menu.
-- Twelve methodology guides covering collection, qualitative and quantitative analysis, evidence confidence, sampling and research design. Each includes what to collect, practical steps, limitations and an illustrative example.
+- Thirteen methodology guides covering collection, qualitative and quantitative analysis, evidence confidence, sampling and research design. Each includes what to collect, practical steps, limitations and an illustrative example.
+- A seven-section UX project framing canvas, reached through its kickoff guide, with section shortcuts, contextual tips and an explicit option to copy context into empty fields for review. Drafts are included in JSON backups and Markdown downloads.
 - A method chooser based on the decision, available material, user access and constraints; options explain their prerequisites.
-- Twelve editable templates with autosaved drafts and Markdown downloads.
+- Thirteen editable templates with autosaved drafts and Markdown downloads.
 - Stage-specific advice for thirteen common difficulties, including missing users, messy or conflicting evidence and unsupported improvement claims.
 - Twenty practical activities with preparation guidance, agendas, questions and expected outputs.
 - Direct navigation and activity search, with every section available immediately.
@@ -94,6 +95,6 @@ No GPT Sites credentials, hosting identifiers, `.openai` metadata, browser data 
 
 ## Methodology and facilitation guidance
 
-Guides and template structures were developed from the supplied UXR Creator, UXR-activities and UXR-Framework-reference PDFs. The private reference files are not included in this public repository. Maze’s UX research guide is linked as further reading. Examples are illustrative, not findings from a real project.
+Guides and template structures were developed from the supplied UXR Creator, UXR-activities, UXR-Framework-reference and UXR-cadrage PDFs. The private reference files are not included in this public repository. Maze’s UX research guide is linked as further reading. Examples are illustrative, not findings from a real project.
 
 Method suggestions are deterministic guidance based on explicit choices. They do not analyse project evidence or certify a study design. Advice appears from recorded difficulties and project constraints; update those inputs as the study changes. Session timings, agendas, measures and templates should be adapted to the question, the team, the decision and the applicable research practices.
