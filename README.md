@@ -2,11 +2,15 @@
 
 A practical UX research methodology guide and toolkit for UX designers working with a product team. Originally prototyped on GPT Sites; this repository contains the portable HTML, CSS and JavaScript source.
 
-## Framework planning workspace
+## Project documentation / Documentation projet
 
-The [framework workspace](framework/README.md) holds the v0.5 product brief, project launch checklist, research builder specification, prioritised backlog, decisions and audits. These are editable Markdown files stored with the repository, available locally and on GitHub. Proposed v0.5 behaviour is labelled separately from the current application.
+The [UXR - Framework Notion workspace](https://app.notion.com/p/40bda503184980b99270ef9032fc8df8) is the source of truth for project purpose, bilingual journeys/features, decisions, specifications and backlog. GitHub holds the prototype, build tools and technical checks. Historical planning originals, including uncommitted drafts, were migrated into Notion on 1 November 2026; old versions remain in Git history.
 
-To resume in a new session, start with the [session handoff](framework/session-handoff.md). Repository [agent instructions](AGENTS.md) point future work to the same saved context.
+[Notion](https://app.notion.com/p/40bda503184980b99270ef9032fc8df8) fait référence pour le pilotage, les parcours/fonctionnalités bilingues, décisions, spécifications et backlog. GitHub conserve le prototype, ses outils et vérifications. Les originaux historiques ont été migrés dans Notion ; l’historique Git est conservé.
+
+The application remains v0.3.4. Migration of documentation does not implement planned v0.5 behaviour.
+
+See [technical validation](validation/README.md) for regression and baseline diagnostic checks.
 
 ## What it does
 

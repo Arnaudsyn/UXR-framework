@@ -3,7 +3,7 @@
 const fs=require('node:fs');
 const path=require('node:path');
 const assert=require('node:assert/strict');
-process.chdir(path.resolve(__dirname,'../..'));
+process.chdir(path.resolve(__dirname,'..'));
 const harness=fs.readFileSync('check-flow.cjs','utf8').split('(async()=>{')[0];
 const boot=new Function('require',harness+'\nreturn boot;')(require);
 const KEY='research-compass-v1',now='2026-10-21T12:00:00Z';
