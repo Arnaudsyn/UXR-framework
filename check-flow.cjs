@@ -234,6 +234,13 @@ function boot(existing, now, existingSession) {
   shared.clickAction('request-reset-context');shared.clickAction('confirm-project-action');assert.equal(sharedDb().projects[0].readiness.constraint,'','Reset clears the shared constraint');shared.clickAction('project-undo');assert.equal(sharedDb().projects[0].readiness.constraint,'locked','Undo restores the shared constraint');
   const sharedReload=boot(shared.storage);sharedReload.get('#contextButton').events.click();assert.equal(sharedReload.get('field-constraint').value,'locked');sharedReload.navigate('#phase/readiness');assert.match(sharedReload.get('#main').innerHTML,/id="readiness-constraint-locked"[^>]*checked/);
 
+  // Custom durations are per section, retained on refresh and used by Reset.
+  const timed=boot();timed.navigate('#activity/frame-problem');timed.clickAction('kf-facilitate','frame-problem');timed.clickAction('kf-section','problem');
+  timed.listeners.change({target:{dataset:{kfTiming:'problem'},value:'12',matches:()=>false}});assert.match(timed.get('#main').innerHTML,/>12:00<\/output>/);
+  timed.clickAction('kf-timer');timed.clickAction('kf-timer-reset');assert.match(timed.get('#main').innerHTML,/>12:00<\/output>/);
+  timed.clickAction('kf-section','success');assert.match(timed.get('#main').innerHTML,/>20:00<\/output>/);
+  const timedReload=boot(timed.storage,undefined,timed.session);timedReload.navigate('#activity/frame-problem');timedReload.clickAction('kf-facilitate','frame-problem');timedReload.clickAction('kf-section','problem');assert.match(timedReload.get('#main').innerHTML,/>12:00<\/output>/);
+
   // New kickoff data is portable, traceable, route-aware and independent of browsing.
   const kf=boot(),kfHtml=()=>kf.get('#main').innerHTML;
   const kfP=()=>{const db=JSON.parse(kf.storage.get('research-compass-v1'));return db.projects.find(p=>p.id===db.activeId)||JSON.parse(kf.session.get('research-compass-temporary-v1'));};
