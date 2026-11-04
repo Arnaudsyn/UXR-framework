@@ -14,6 +14,13 @@ See [technical validation](validation/README.md) for regression and baseline dia
 
 ## What it does
 
+The current review rebuild gives Home, Readiness and Kickoff a minimal entry flow. Resource menu items remain titles; older guide/template routes are retained for existing links. Readiness and Kickoff use milestones and contextual activities, while later stages retain their earlier layouts.
+
+- Kickoff includes a facilitator-owned framing board with editable cards, pointer/keyboard movement, connections, section/story views, optional timers and Markdown summaries. The earlier form canvas and activity notes remain available for explicit reuse.
+- Constrained entry and low-confidence framing share one alignment → standard/limited/stop flow. A mandate may be drafted as an email or presentation outline; only recorded client/sponsor validation completes its activity. Later material edits request review and preserve earlier mandate drafts.
+- Project JSON exports use version 3 for the board, links, route history and mandate versions; imports accept versions 1, 2 and 3. Older versions of the app cannot read the new envelope. Temporary exploration, saved projects and shared context fields work across the rebuilt stages.
+- Previous/Next and direct journey links stay available with incomplete work; browsing never marks work complete or resumes a stopped intervention.
+
 - Seven research stages: UX readiness, kickoff and framing, planning, data collection, analysis, restitution and decisions, retrospective and reuse.
 - Context-driven objectives in every stage, with supporting guides nested beneath each objective. Intent, user access, constraints, selected methods and recorded difficulties shape the suggested objectives. Templates are reached through their guides or the dedicated menu.
 - Thirteen methodology guides covering collection, qualitative and quantitative analysis, evidence confidence, sampling and research design. Each includes what to collect, practical steps, limitations and an illustrative example.
@@ -85,6 +92,7 @@ Run the existing state and rendering checks with Node.js:
 
 ```sh
 node --check docs/app.js
+node --check docs/kickoff.js
 node --check docs/content.js
 node --check docs/knowledge.js
 node build-standalone.cjs
