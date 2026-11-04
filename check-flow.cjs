@@ -49,11 +49,13 @@ function boot(existing, now) {
   workspace.clickAction('request-delete-project');assert.equal(workspace.get('#projectActionDialog').open,false);
   workspace.navigate('#phase/readiness');workspace.navigate('#overview');assert.equal(workspaceDb().projects.length,0);
   workspace.clickAction('context');workspace.get('#contextDialog').close();assert.equal(workspaceDb().projects.length,0,'Cancelling context does not create a project');
-  workspace.get('#newProject').events.click();const workspaceId=workspaceDb().activeId;
+  workspace.get('#newProject').events.click();assert.equal(workspaceDb().projects.length,0,'Starting project creation does not save an untitled project');workspace.get('#contextDialog').close();workspace.get('#contextDialog').events.close();assert.equal(workspaceDb().projects.length,0,'Cancel new project keeps the workspace empty');
+  workspace.get('#newProject').events.click();workspace.get('#contextForm').values={name:'Workspace QA',stage:'readiness',problem:'',decision:'',users:'',constraint:'open',access:'unknown',intent:'explore',timing:''};workspace.get('#contextForm').events.submit({preventDefault(){},target:workspace.get('#contextForm')});const workspaceId=workspaceDb().activeId;
   assert.equal(workspaceDb().projects.length,1);assert.equal(workspace.get('#workspaceOptions').hidden,false);assert.equal(workspace.get('#exportButton').disabled,false);
   workspace.get('#projectSelect').events.change({target:{value:''}});assert.equal(workspaceDb().activeId,null);assert.equal(workspaceDb().projects.length,1,'Deselecting keeps the project');assert.equal(workspace.get('#workspaceOptions').hidden,true);
   const unselectedReload=boot(workspace.storage);assert.equal(JSON.parse(unselectedReload.storage.get('research-compass-v1')).activeId,null,'No selection survives reload');
   workspace.get('#projectSelect').events.change({target:{value:workspaceId}});assert.equal(workspaceDb().activeId,workspaceId);assert.equal(workspace.get('#workspaceOptions').hidden,false);
+  const beforeCancelledCreation=workspace.storage.get('research-compass-v1');workspace.get('#newProject').events.click();assert.equal(workspace.get('field-name').value,'Untitled project','New-project form does not reuse the selected project name');workspace.get('#contextDialog').close();workspace.get('#contextDialog').events.close();assert.equal(workspace.storage.get('research-compass-v1'),beforeCancelledCreation,'Cancel new project preserves the selected project and saved work');workspace.get('#contextButton').events.click();assert.equal(workspace.get('field-name').value,'Workspace QA','Open context still edits the selected project');
   const phases=app.context.window.PHASES,activities=app.context.window.ACTIVITIES;
   assert.equal(phases.length,7);assert.equal(activities.length,20);
   assert.equal(new Set(activities.map(a=>a.id)).size,activities.length);
