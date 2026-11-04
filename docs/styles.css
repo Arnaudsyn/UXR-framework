@@ -38,3 +38,24 @@
 
 /* Framing canvas: section shortcuts and readable writing space. */
 .canvas-context{display:flex;align-items:center;justify-content:space-between;gap:24px;padding:24px;background:var(--soft,#f3f0fa);border:1px solid var(--line,#e5e0eb);border-radius:16px;margin:24px 0}.canvas-context p{margin:8px 0 0;max-width:700px}.canvas-context .button{flex-shrink:0}.canvas-jumps{display:flex;flex-wrap:wrap;gap:8px;margin:24px 0}.canvas-jumps button{white-space:normal;text-align:left}.canvas-section{margin:24px 0;scroll-margin-top:28px}.canvas-section h2{margin-top:0}.canvas-tip{padding:16px;border-left:3px solid #7650b5;background:#f7f4fc;line-height:1.6}.canvas-section .output-field:last-child{margin-bottom:0}@media(max-width:650px){.canvas-context{align-items:flex-start;flex-direction:column;gap:16px}.canvas-jumps{display:grid;grid-template-columns:1fr}.canvas-section{padding:20px}.canvas-section h2{font-size:24px}}
+/* Homepage MVP: one set of project controls and a quiet resource menu. */
+.topbar{height:auto;min-height:88px;flex-wrap:wrap;padding:16px 30px;gap:14px 24px}
+.workspace-controls{display:flex;align-items:flex-end;gap:7px;min-width:0;flex:1}
+.workspace-picker{min-width:160px;max-width:260px;flex:1}
+.workspace-picker .project-label{display:block;margin:0 0 5px}
+.workspace-picker .project-select{margin:0}
+.workspace-options{height:40px;padding:7px 10px;font-size:20px;line-height:1}
+.top-actions{flex-wrap:wrap;justify-content:flex-end;gap:8px}
+.menu-title{display:block;padding:12px 13px;font-size:13px;color:var(--ink)}
+.quick-card h3{font-size:12px;letter-spacing:0;line-height:1.5;margin:0 0 3px}
+.quick-card p{font-size:11px;color:var(--muted);line-height:1.5;margin:0}
+.quick-card:hover{border-color:var(--line)}
+#researchJourney{scroll-margin-top:24px;margin-bottom:34px}
+.hero h1{overflow-wrap:anywhere}
+@media(max-width:1100px){.topbar .save-state{flex-basis:100%;margin:0;text-align:right}.top-actions{flex:1}.hero{grid-template-columns:1fr}.journey-art{display:none}}
+@media(max-width:700px){.topbar{padding:14px 20px;gap:13px 10px}.workspace-controls{flex:1}.workspace-picker{min-width:0;max-width:none}.workspace-picker .project-select select{font-size:12px}.top-actions{flex-basis:100%;margin:0;justify-content:flex-start;gap:8px}.topbar .top-actions .save-state{display:block;order:4;text-align:left;font-size:10px;margin-top:2px}.topbar #contextButton{margin-left:auto;font-size:11px;padding:8px 10px}.hero-buttons .button{white-space:normal}.quick-grid{grid-template-columns:1fr}.sidebar .knowledge-nav{margin-top:8px}}
+
+.close-menu{display:none}
+@media(max-width:700px){.close-menu{display:block;position:absolute;top:14px;right:12px}.sidebar .brand{margin-top:20px}.topbar .workspace-options{display:inline-flex}}
+.sidebar{overflow-y:auto}.sidebar .knowledge-nav{margin-bottom:0}.sidebar .nav-label{margin-top:23px}
+.sidebar{overflow:hidden}.sidebar .brand{flex-shrink:0;margin-bottom:26px}.sidebar .knowledge-nav{flex-shrink:0}.menu-title{padding:9px 13px}.sidebar>nav[aria-label="The research journey"]{flex:1;min-height:0;overflow-y:auto}.sidebar .nav-label{margin:14px 10px 10px}.sidebar-bottom{flex-shrink:0;padding-top:15px}.sidebar .phase-nav{padding:7px 10px}

@@ -5,22 +5,31 @@
   <meta name="description" content="Methodology guides, research tools and team activities for UX designers, from project framing to analysis and decisions.">
   <meta name="theme-color" content="#f7f7f2"><title>Research Compass · UX research guide &amp; toolkit</title>
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Crect width='40' height='40' rx='12' fill='%235842d8'/%3E%3Cpath d='M26 12l-4 10-10 6 5-11z' fill='%23dfff8a'/%3E%3C/svg%3E">
-  <link rel="stylesheet" href="styles.css?v=0.3.4"><script src="content.js" defer></script><script src="knowledge.js?v=0.3.4" defer></script><script src="app.js?v=0.3.4" defer></script>
+  <link rel="stylesheet" href="styles.css?v=home-20261104"><script src="content.js" defer></script><script src="knowledge.js?v=0.3.4" defer></script><script src="app.js?v=home-20261104" defer></script>
 </head>
 <body>
 <a class="skip" href="#main">Skip to content</a>
 <aside class="sidebar" id="sidebar">
+  <button class="icon-button close-menu" data-action="close-menu" aria-label="Close navigation">✕</button>
   <a class="brand" href="#overview"><span class="brand-icon" aria-hidden="true">↗</span><span>Research<br>Compass<span class="brand-sub">UX RESEARCH GUIDE &amp; TOOLKIT</span></span></a>
-  <label class="project-label" for="projectSelect">YOUR WORKSPACE</label>
-  <div class="project-select"><select id="projectSelect" aria-label="Switch project"></select><button id="newProject" aria-label="Create a new project" title="New project">＋</button></div>
-  <button class="project-options-trigger" data-action="manage-project">Project options <span aria-hidden="true">···</span></button>
-  <button class="search-button" id="jumpButton"><span>⌕ &nbsp; Find a guide or activity</span><kbd>⌘ K</kbd></button>
-  <nav class="knowledge-nav" aria-label="Knowledge and tools"><a href="#library" data-resource-nav="library">Methodology guide <span>↗</span></a><a href="#selector" data-resource-nav="selector">Choose methods <span>↗</span></a><a href="#templates" data-resource-nav="templates">Templates <span>↗</span></a><a href="#help" data-resource-nav="help">Help me proceed <span>↗</span></a></nav>
-  <nav aria-label="Framework navigation"><a class="nav-home" href="#overview"><span aria-hidden="true">▦</span> Overview</a><p class="nav-label">THE RESEARCH JOURNEY</p><div id="phaseNav"></div></nav>
-  <div class="sidebar-bottom"><div class="progress-label"><span>Activities completed</span><strong id="progressText">0 / 20</strong></div><progress id="progress" value="0" max="20" aria-label="Activities completed"></progress><p id="progressCaption">Pick up wherever your project is.</p><p class="backup-hint">Keep a project file to resume on any device.</p></div>
+  <nav class="knowledge-nav" aria-label="Resources">
+    <span class="menu-title">Guides</span>
+    <span class="menu-title">Choose methods</span>
+    <span class="menu-title">Templates</span>
+    <span class="menu-title">Help center</span>
+  </nav>
+  <nav aria-label="The research journey"><p class="nav-label">THE RESEARCH JOURNEY</p><div id="phaseNav"></div></nav>
+  <div class="sidebar-bottom"><div class="progress-label"><span>Activities completed</span><strong id="progressText">0 / 20</strong></div><progress id="progress" value="0" max="20" aria-label="Activities completed"></progress><p id="progressCaption">0 of 7 stages complete</p></div>
 </aside>
 <div class="workspace">
-  <header class="topbar"><button class="icon-button mobile-menu" id="menuButton" aria-label="Toggle navigation" aria-expanded="false">☰</button><div class="breadcrumb" id="breadcrumb">Workspace <span>/</span> Overview</div><div class="top-actions"><span class="save-state" id="saveState">● Saved in this browser</span><button class="button quiet file-button" id="exportButton" aria-label="Export project"><span class="desktop-action">Export project ↓</span><span class="mobile-action">Export ↓</span></button><button class="button quiet file-button" id="importButton" aria-label="Import project"><span class="desktop-action">Import project ↑</span><span class="mobile-action">Import ↑</span></button><button class="button" id="contextButton">Project context <span aria-hidden="true">↗</span></button></div></header>
+  <header class="topbar">
+    <button class="icon-button mobile-menu" id="menuButton" aria-label="Toggle navigation" aria-expanded="false">☰</button>
+    <div class="workspace-controls">
+      <div class="workspace-picker"><label class="project-label" for="projectSelect">WORKSPACE</label><div class="project-select"><select id="projectSelect" aria-label="Switch project"></select><button id="newProject" aria-label="Create a new project" title="New project">＋</button></div></div>
+      <button class="button quiet workspace-options" data-action="manage-project" aria-label="Project options" title="Project options">···</button>
+    </div>
+    <div class="top-actions"><span class="save-state" id="saveState">● Saved in this browser</span><button class="button quiet file-button" id="exportButton" aria-label="Export project"><span class="desktop-action">Export project ↓</span><span class="mobile-action">Export ↓</span></button><button class="button quiet file-button" id="importButton" aria-label="Import project"><span class="desktop-action">Import project ↑</span><span class="mobile-action">Import ↑</span></button><button class="button" id="contextButton">Create project context <span aria-hidden="true">↗</span></button></div>
+  </header>
   <aside id="projectUndo" class="project-undo" aria-live="polite" aria-label="Undo project change" hidden></aside>
   <main id="main" tabindex="-1"></main>
   <footer>Methodology, evidence and collaboration for UX designers.<span>Research Compass · v0.3.4</span></footer>
