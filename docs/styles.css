@@ -66,7 +66,7 @@
 .context-section .field-help{margin-bottom:15px}
 .context-divider{border:0;border-top:1px solid var(--line);margin:22px 0 18px}
 .context-section .audience-notes{display:block;margin:0}
-#workspaceOptions[hidden],#saveState[hidden]{display:none!important}
+#workspaceOptions[hidden],#saveState[hidden],#saveProjectButton[hidden]{display:none!important}
 .workspace-picker{max-width:280px}
 @media(max-width:700px){.context-section{padding:16px}.context-section>.form-grid{grid-template-columns:1fr}.workspace-picker{max-width:none}}
 /* Readiness: editorial introduction, two milestones and supporting resources. */
@@ -83,3 +83,5 @@ html{scroll-padding-top:var(--header-height,88px)}
 .topbar{position:sticky;top:0;z-index:15;background:var(--paper)}
 .readiness-resources,.guide-sidebar{top:calc(var(--header-height,88px) + 24px)}
 .focus-mode .topbar{display:flex}.focus-mode .topbar .mobile-menu{display:none}
+
+@media(max-width:700px){.topbar #saveProjectButton{font-size:11px;padding:8px 10px}}

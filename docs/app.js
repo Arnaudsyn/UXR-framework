@@ -3,7 +3,7 @@
   const phases = window.PHASES, activities = window.ACTIVITIES;
   const $ = s => document.querySelector(s);
   const esc = v => String(v ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-  const KEY = 'research-compass-v1';
+  const KEY = 'research-compass-v1', TEMP_KEY = 'research-compass-temporary-v1';
   const readinessEnums={briefed:['yes','no'],briefing:['done','skipped'],questionnaire:['done','skipped'],assessment:['yes','no'],constraint:['partial','locked'],leadReview:['done','approved','skipped'],decision:['proceed','hold','stop']};
   const readinessNotes=['briefingNote','questionnaireNote','constraintNote','decisionNote','reviewReference'];
   const newId = () => globalThis.crypto?.randomUUID?.() || `p-${Date.now()}-${Math.random().toString(36).slice(2)}`;
@@ -13,9 +13,10 @@
   try { const parsed = JSON.parse(localStorage.getItem(KEY)); if(parsed?.version===1 && Array.isArray(parsed.projects) && parsed.projects.every(p=>p?.id && p.context && p.notes && p.checks && Array.isArray(p.done))){db=parsed;} } catch {}
   if(!db)db={version:1,activeId:null,projects:[]};
   if(!db.projects.some(p=>p.id===db.activeId))db.activeId=null;
-  let emptyProject=blank();
+  let emptyProject=blank(),temporaryProject=null;
+  try{const draft=JSON.parse(sessionStorage.getItem(TEMP_KEY));if(draft?.id&&draft.context&&draft.notes&&draft.checks&&Array.isArray(draft.done))temporaryProject=draft;}catch{}
   const selectedProject=()=>db.projects.find(p=>p.id===db.activeId);
-  const project=()=>selectedProject()||emptyProject;
+  const project=()=>selectedProject()||temporaryProject||emptyProject;
   const phaseById = id => phases.find(p=>p.id===id);
   const activityById = id => activities.find(a=>a.id===id);
   const phaseActivities = id => activities.filter(a=>a.phase===id);
@@ -154,11 +155,19 @@
   function knowledgeMarkdown(){const p=project();return `\n## Research methods in the plan\n\n${p.selectedMethods.length?p.selectedMethods.map(guideById).map(g=>'- '+g.title).join('\n'):'None selected.'}\n\n## Recorded difficulties\n\n${p.issues.length?p.issues.map(id=>difficulties.find(d=>d.id===id)).filter(Boolean).map(d=>'- '+d.title).join('\n'):'None recorded.'}\n`+templates.filter(t=>Object.values(p.templateNotes[t.id]||{}).some(Boolean)).map(t=>`\n## Template draft: ${t.title}\n\n${t.sections.map(([key,title])=>`### ${title}\n\n${p.templateNotes[t.id]?.[key]||'Not captured.'}\n`).join('\n')}`).join('\n');}
 
   db.projects.forEach(normaliseResources);
+  if(temporaryProject&&db.projects.some(p=>p.id===temporaryProject.id))temporaryProject=null;
+  if(temporaryProject)normaliseResources(temporaryProject);
   const phaseStatus = ph => { const list=phaseActivities(ph.id), completed=list.filter(a=>activityIsComplete(a.id)).length; return {total:list.length,completed,done:completed===list.length}; };
   const completedStages = () => phases.filter(ph=>phaseStatus(ph).done).length;
   function toast(message){$('#toast').textContent=message;$('#toast').classList.add('visible');clearTimeout(toastTimeout);toastTimeout=setTimeout(()=>$('#toast').classList.remove('visible'),3500);}
-  function save(createProject=true){const p=project();if(createProject&&!selectedProject()){db.projects.push(p);db.activeId=p.id;emptyProject=blank();}if(selectedProject())p.updatedAt=new Date().toISOString();try{localStorage.setItem(KEY,JSON.stringify(db));storageFailed=false;}catch{storageFailed=true;}syncWorkspaceControls();updateSaveState();}
-  function updateSaveState(){const el=$('#saveState');el.hidden=!selectedProject()&&!storageFailed;el.textContent=storageFailed?'● Not saved · export a backup':'● Saved in this browser';el.classList.toggle('storage-warning',storageFailed);}
+  function save(createProject=true){
+    const p=project();
+    if(createProject&&!selectedProject()&&!temporaryProject){temporaryProject=p;temporaryProject.context.name='Temporary project';emptyProject=blank();}
+    if(selectedProject()||temporaryProject===p)p.updatedAt=new Date().toISOString();
+    try{localStorage.setItem(KEY,JSON.stringify(db));if(temporaryProject&&!selectedProject())sessionStorage.setItem(TEMP_KEY,JSON.stringify(temporaryProject));storageFailed=false;}catch{storageFailed=true;}
+    syncWorkspaceControls();updateSaveState();
+  }
+  function updateSaveState(){const el=$('#saveState'),temporary=!selectedProject()&&!!temporaryProject;el.hidden=!selectedProject()&&!temporary&&!storageFailed;el.textContent=storageFailed?'● Not saved · export a backup':temporary?'● Temporary · this tab':'● Saved in this browser';el.classList.toggle('storage-warning',storageFailed);}
   function closeDialog(id){document.getElementById(id).close();if(id==='contextDialog')contextDraft=null;}
   const contextResetFields=['context','hasContext','problemTypes','customProblems','profiles','selectedMethods','issues','methodSelection'];
   let pendingProjectAction=null,projectUndo=null;
@@ -198,15 +207,16 @@
   function route(){const parts=location.hash.slice(1).split('/');return {kind:parts[0]||'overview',id:parts[1]};}
   function syncWorkspaceControls(){
     const selected=selectedProject();
-    $('#projectSelect').innerHTML=`<option value="" ${!selected?'selected':''}>Create or select a project</option>`+db.projects.map(p=>`<option value="${esc(p.id)}" ${p.id===selected?.id?'selected':''}>${esc(p.context.name)}</option>`).join('');
+    $('#projectSelect').innerHTML=`<option value="" ${!selected?'selected':''}>${temporaryProject?'Temporary project':'Create or select a project'}</option>`+db.projects.map(p=>`<option value="${esc(p.id)}" ${p.id===selected?.id?'selected':''}>${esc(p.context.name)}</option>`).join('');
     $('#workspaceOptions').hidden=!selected;
-    $('#exportButton').disabled=!selected;
+    $('#exportButton').disabled=!selected&&!temporaryProject;
+    $('#saveProjectButton').hidden=!!selected||!temporaryProject;
     $('#contextButton').textContent=selected?.hasContext?'Open project context':'Create project context';
   }
   function updateChrome(){
     renderProjectUndo();
     const p=project(),r=route(),total=activities.length;
-    syncWorkspaceControls();
+    syncWorkspaceControls();updateSaveState();
     $('.brand').setAttribute('aria-label','Research Compass home');
     $('#phaseNav').innerHTML=phases.map(ph=>{const status=phaseStatus(ph),active=r.id===ph.id||activityById(r.id)?.phase===ph.id;return `<a class="phase-nav ${active?'active':''} ${status.done?'completed':''}" ${active?'aria-current="page"':''} href="#phase/${ph.id}" aria-label="${ph.name}, ${status.completed} of ${status.total} ${ph.id==='readiness'&&p.readiness.touchedAt?'milestones reviewed':'activities completed'}"><span class="nav-number">${status.done?'✓':phaseNum(ph.id)}</span><span class="nav-phase-label"><span>${ph.name}</span><small class="nav-phase-status">${status.done?(ph.id==='readiness'&&p.readiness.touchedAt?'Reviewed':'Completed'):status.completed?'In progress':'Not started'} · ${status.completed}/${status.total}</small></span></a>`;}).join('');
     document.querySelectorAll('[data-resource-nav]').forEach(a=>{const active=a.dataset.resourceNav===r.kind||(a.dataset.resourceNav==='library'&&r.kind==='guide')||(a.dataset.resourceNav==='templates'&&r.kind==='template');a.classList.toggle('active',active);if(active)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current');});
@@ -247,7 +257,6 @@
     return project().done.includes(id);
   }
   function setReadiness(field,value,rerender=true){
-    if(!selectedProject())return;
     if(readinessEnums[field]&&value!==''&&!readinessEnums[field].includes(value))return;
     if(!readinessEnums[field]&&!readinessNotes.includes(field))return;
     const p=project(),before=cloneData(p.readiness),r=p.readiness;
@@ -255,7 +264,7 @@
     record(field,String(value).slice(0,4000));
     if(field==='briefed')record('briefing',value==='yes'?'done':'');
     if(field==='briefing'&&value==='done')record('briefed','yes');
-    r.history=r.history.slice(-100);r.touchedAt=new Date().toISOString();save(false);
+    r.history=r.history.slice(-100);r.touchedAt=new Date().toISOString();save();
     if(storageFailed){p.readiness=before;if(rerender)render();toast('This check could not be saved. Your previous record is unchanged.');return;}
     if(rerender){render();(value?document.getElementById(`readiness-${field}-${value}`):document.querySelector(`input[data-readiness="${field}"]`))?.focus();}
     else {updateChrome();$('#readinessNextArea').innerHTML=readinessDecisionPanel();const badge=$('#readinessAssessmentStatus');badge.textContent=readinessProgress().assessment?'Reviewed':'To review';badge.classList.toggle('reviewed',readinessProgress().assessment);const note=$('#readinessSaveHint');if(note)note.textContent='Notes saved.';}
@@ -274,8 +283,8 @@
     return `<section class="readiness-next ${r.assessment==='no'&&r.decision==='stop'&&r.constraint==='locked'?'stopped':''}" aria-labelledby="readinessNextTitle"><p class="eyebrow">NEXT STEP</p><h2 id="readinessNextTitle">${readinessRouteLabel()}</h2><p>${!status.assessment?'Record the assessment and any applicable constraint decision.':r.assessment==='yes'?'The project has made room for UX. Continue by framing the problem and agreeing the design intervention.':r.constraint==='partial'?'Start kickoff with UX & business alignment to clarify missing information, boundaries and decisions.':r.decision==='proceed'?'Carry the agreed limits, remaining opportunities and review decision into kickoff.':r.decision==='hold'?'Resolve the recorded review points before committing to the next step.':'Keep the stop decision and its rationale with the project.'}</p>${status.canContinue?'<button class="button primary" data-action="readiness-kickoff">Continue to kickoff</button>':''}</section>`;
   }
   function renderReadiness(){
-    const p=project(),r=p.readiness,status=readinessProgress(),ph=phaseById('readiness'),selected=!!selectedProject();
-    $('#main').innerHTML=`<article class="readiness-page" style="${style(ph)}"><a class="back-link" href="#overview">← Home</a><div class="phase-header"><span class="phase-disc">01</span><div><p class="eyebrow">STAGE 01 / 07</p><h1>UX readiness</h1><p>Can research happen properly?</p></div></div><section class="readiness-intro"><h2>Objectives for this stage</h2><p>Establish a shared understanding of the design intervention and check whether the project has made room for UX. Identify what can still change before moving into framing.</p></section>${!selected?'<div class="readiness-project-prompt"><p>Select a project to record its readiness checklist.</p><button class="button" data-action="context">Create project context</button></div>':`<div class="readiness-context"><strong>${esc(p.context.name)}</strong><span>${esc(p.context.decision||'Review the project’s starting conditions.')}</span></div>`}<div class="readiness-layout"><div class="readiness-main"><fieldset class="readiness-work" ${!selected?'disabled':''}><legend class="sr-only">Readiness checklist</legend>
+    const p=project(),r=p.readiness,status=readinessProgress(),ph=phaseById('readiness'),selected=!!selectedProject()||!!temporaryProject;
+    $('#main').innerHTML=`<article class="readiness-page" style="${style(ph)}"><a class="back-link" href="#overview">← Home</a><div class="phase-header"><span class="phase-disc">01</span><div><p class="eyebrow">STAGE 01 / 07</p><h1>UX readiness</h1><p>Can research happen properly?</p></div></div><section class="readiness-intro"><h2>Objectives for this stage</h2><p>Establish a shared understanding of the design intervention and check whether the project has made room for UX. Identify what can still change before moving into framing.</p></section>${selected?`<div class="readiness-context"><strong>${esc(p.context.name)}</strong><span>${esc(p.context.decision||'Review the project’s starting conditions.')}</span></div>`:''}<div class="readiness-layout"><div class="readiness-main"><fieldset class="readiness-work"><legend class="sr-only">Readiness checklist</legend>
     <section class="readiness-milestone" aria-labelledby="readinessPrepareTitle"><header><span class="milestone-number">1</span><div><p class="eyebrow">MILESTONE 1</p><h2 id="readinessPrepareTitle">Prepare the UX intervention</h2></div><span class="readiness-badge ${status.preparation?'reviewed':''}">${status.preparation?'Reviewed':'To review'}</span></header>
     <div class="readiness-step"><h3>Introduce UX to the project team</h3><p>A first conversation with the Design Lead or Head of Design helps the team understand why UX is involved, how the work will happen and what participation is needed.</p>${readinessChoices('briefed','Has the project team been briefed on UX and the design intervention?',[['yes','Yes'],['no','Not yet']])}${r.briefed==='yes'?'<p class="readiness-status">✓ Done · Team briefing</p>':r.briefed==='no'?`<div class="readiness-followup"><h4>Organise the introduction with a lead</h4><p>Strongly recommended, especially when expectations or the designer’s role are unclear. You can skip this optional step and continue.</p>${readinessTemplateButton('presentation',true)}${readinessContacts()}${readinessChoices('briefing','Briefing follow-up',[['done','Done'],['skipped','Skipped']])}${r.briefing==='skipped'?readinessNote('briefingNote','Briefing notes (optional)','Record why it was skipped or what will happen later.'):''}</div>`:''}</div>
     <div class="readiness-step"><h3>Send the project intake questionnaire</h3><p>Collect the project team’s expectations, practical constraints and the decision the design work should support before the framing conversation.</p><aside class="readiness-info"><strong>When is it useful?</strong><p>Use it when the context is unclear or several people need to contribute. For a small or tightly constrained project, existing information or a short conversation may cover the same ground.</p></aside>${readinessTemplateButton('questionnaire')}${readinessChoices('questionnaire','Questionnaire · optional',[['done','Done'],['skipped','Skipped']])}${r.questionnaire==='skipped'?readinessNote('questionnaireNote','Questionnaire notes (optional)','Record the alternative or why it was not needed.'):''}</div></section>
@@ -327,7 +336,7 @@
     const el=event.target.closest('[data-action]');if(!el)return;const action=el.dataset.action,id=el.dataset.id;
     if(action==='readiness-template'){const title=readinessTemplates[id];if(title){$('#readinessTemplateTitle').textContent=title;$('#readinessTemplateDialog').showModal();}}
     if(action==='readiness-clear')setReadiness(id,'');
-    if(action==='readiness-kickoff'&&selectedProject()&&readinessProgress().canContinue){const p=project(),r=p.readiness,before=cloneData(p.context);if(r.assessment==='no')p.context.constraint=r.constraint;p.context.stage='kickoff';save(false);if(storageFailed){p.context=before;updateChrome();toast('The handoff could not be saved. Your project context is unchanged.');}else location.hash='#phase/kickoff';}
+    if(action==='readiness-kickoff'&&(selectedProject()||temporaryProject)&&readinessProgress().canContinue){const p=project(),r=p.readiness,before=cloneData(p.context);if(r.assessment==='no')p.context.constraint=r.constraint;p.context.stage='kickoff';save(false);if(storageFailed){p.context=before;updateChrome();toast('The handoff could not be saved. Your project context is unchanged.');}else location.hash='#phase/kickoff';}
     if(action==='manage-project')showProjectManager();
     if(action==='close-menu'){$('#sidebar').classList.remove('open');$('#menuButton').setAttribute('aria-expanded','false');$('#menuButton').focus();}
     if(action==='request-reset-context')requestProjectAction('reset');
@@ -356,10 +365,10 @@
   document.addEventListener('input',e=>{if(e.target.matches('[data-readiness-note]')){setReadiness(e.target.dataset.readinessNote,e.target.value,false);return;}if(e.target.matches('[data-planning-input]')){contextPlanningPreview();return;}if(e.target.matches('[data-template]')){const p=project(),id=e.target.dataset.template;p.templateNotes[id]??={};p.templateNotes[id][e.target.dataset.field]=e.target.value;save();return;}if(e.target.matches('[data-note]'))updateNote(e.target.dataset.id,e.target.dataset.note,e.target.value);});
   document.addEventListener('change',e=>{if(e.target.matches('[data-readiness]')){setReadiness(e.target.dataset.readiness,e.target.value);return;}if(e.target.matches('[data-planning-input]')){contextPlanningPreview();return;}if(e.target.matches('[data-problem-type]')){renderProblemPreview($('#contextForm'));return;}if(e.target.matches('[data-method]')){const p=project(),id=e.target.dataset.method;p.selectedMethods=e.target.checked?[...new Set([...p.selectedMethods,id])]:p.selectedMethods.filter(x=>x!==id);save();$('#selectedMethodSummary').innerHTML=selectedMethodSummary();return;}if(e.target.matches('[data-issue]')){const p=project(),id=e.target.dataset.issue;p.issues=e.target.checked?[...new Set([...p.issues,id])]:p.issues.filter(x=>x!==id);save();const ds=activeDifficulties(route().id||p.context.stage);$('#difficultyAdvice').innerHTML=ds.length?`<div class="advice-grid">${ds.map(adviceCard).join('')}</div>`:'<p class="empty">No difficulty selected for this stage.</p>';return;}if(e.target.matches('[data-check]')){const id=e.target.dataset.id,i=Number(e.target.dataset.check),p=project();p.checks[id]??=[];p.checks[id]=e.target.checked?[...new Set([...p.checks[id],i])]:p.checks[id].filter(n=>n!==i);save();}});
   document.addEventListener('keydown',e=>{if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==='k'){e.preventDefault();if(![...document.querySelectorAll('dialog')].some(d=>d.open))openJump();}if(e.target.matches('[role=tab]')&&['ArrowRight','ArrowLeft','Home','End'].includes(e.key)){e.preventDefault();const tabs=['prepare','run','capture'];const next=e.key==='Home'?0:e.key==='End'?2:(tabs.indexOf(activeTab)+(e.key==='ArrowRight'?1:2))%3;setTab(tabs[next]);$(`#tab-${tabs[next]}`).focus();}if(e.key==='Escape'&&workshop)endWorkshop();});
-  $('#contextButton').addEventListener('click',()=>showContext());$('#contextDialog').addEventListener('close',()=>{contextDraft=null;});$('#jumpButton')?.addEventListener('click',openJump);$('#jumpSearch').addEventListener('input',renderJump);
+  $('#contextButton').addEventListener('click',()=>showContext());$('#saveProjectButton').addEventListener('click',()=>showContext());$('#contextDialog').addEventListener('close',()=>{contextDraft=null;});$('#jumpButton')?.addEventListener('click',openJump);$('#jumpSearch').addEventListener('input',renderJump);
   $('#menuButton').addEventListener('click',()=>{const open=$('#sidebar').classList.toggle('open');$('#menuButton').setAttribute('aria-expanded',String(open));});
   $('#sidebar').addEventListener('click',e=>{if(e.target.closest('a')){$('#sidebar').classList.remove('open');$('#menuButton').setAttribute('aria-expanded','false');}});
-  $('#contextForm').addEventListener('submit',e=>{e.preventDefault();const fd=new FormData(e.target),p=contextDraft||project(),values=Object.fromEntries(fd);p.problemTypes=fd.getAll('problemTypes');p.customProblems=String(fd.get('customProblems')||'').split(/\r?\n/);normaliseProblems(p);delete values.problemTypes;delete values.customProblems;p.profiles=normaliseProfiles(readFormProfiles(fd));for(const key of ['profileName','profileDescription','profilePopulation','profileReachable','profileTarget'])delete values[key];p.context=values;normalisePlanning(p);p.context.name=p.context.name.trim()||'Untitled project';p.hasContext=true;if(contextDraft){db.projects.push(p);db.activeId=p.id;contextDraft=null;}save();closeDialog('contextDialog');render();toast('Context saved. Your objectives, method suggestions and activity highlights reflect these problems.');});
+  $('#contextForm').addEventListener('submit',e=>{e.preventDefault();const fd=new FormData(e.target),source=contextDraft||project(),p=cloneData(source),values=Object.fromEntries(fd);p.problemTypes=fd.getAll('problemTypes');p.customProblems=String(fd.get('customProblems')||'').split(/\r?\n/);normaliseProblems(p);delete values.problemTypes;delete values.customProblems;p.profiles=normaliseProfiles(readFormProfiles(fd));for(const key of ['profileName','profileDescription','profilePopulation','profileReachable','profileTarget'])delete values[key];p.context=values;normalisePlanning(p);p.context.name=p.context.name.trim()||'Untitled project';p.hasContext=true;const before=cloneData(db),promoting=!selectedProject()||!!contextDraft;if(promoting){db.projects.push(p);db.activeId=p.id;}else db.projects[db.projects.findIndex(item=>item.id===p.id)]=p;save(false);if(storageFailed){db=before;syncWorkspaceControls();toast('The project could not be saved. Your previous work is unchanged.');return;}if(temporaryProject?.id===p.id){temporaryProject=null;try{sessionStorage.removeItem(TEMP_KEY);}catch{}}contextDraft=null;closeDialog('contextDialog');render();toast('Context saved. Your objectives, method suggestions and activity highlights reflect these problems.');});
   $('#projectSelect').addEventListener('change',e=>{db.activeId=db.projects.some(p=>p.id===e.target.value)?e.target.value:null;save(false);activeTab='prepare';location.hash='#overview';render();});
   $('#newProject').addEventListener('click',()=>showContext(true));
   $('#exportButton').addEventListener('click',()=>$('#exportDialog').showModal());
