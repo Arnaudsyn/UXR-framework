@@ -369,5 +369,7 @@
   $('#importFile').addEventListener('change',async e=>{const file=e.target.files[0];if(!file)return;try{if(file.size>10000000)throw Error('This file is too large. Choose a project file under 10 MB.');const restored=validateImport(await file.text());db.projects.push(restored);db.activeId=restored.id;save();closeDialog('exportDialog');location.hash='#overview';render();toast('Project imported with context, notes and progress. Existing projects are unchanged.');}catch(err){toast(err instanceof SyntaxError?'This is not a valid JSON project file. Choose a file exported from Research Compass.':err.message||'Unable to import this project file.');}e.target.value='';});
   window.addEventListener('hashchange',()=>{if(workshop){stopTimer();workshop=null;}activeTab='prepare';render();window.scrollTo(0,0);});
   for(const dialog of document.querySelectorAll('dialog'))dialog.addEventListener('click',e=>{if(e.target===dialog){const r=dialog.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)dialog.close();}});
-  save(false);render();
+  function measureHeader(){const height=$('.topbar')?.getBoundingClientRect?.().height;if(height)document.documentElement?.style?.setProperty('--header-height',`${height}px`);}
+  if(typeof ResizeObserver!=='undefined')new ResizeObserver(measureHeader).observe($('.topbar'));else window.addEventListener('resize',measureHeader);
+  save(false);render();measureHeader();
 })();
