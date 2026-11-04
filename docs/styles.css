@@ -59,3 +59,13 @@
 @media(max-width:700px){.close-menu{display:block;position:absolute;top:14px;right:12px}.sidebar .brand{margin-top:20px}.topbar .workspace-options{display:inline-flex}}
 .sidebar{overflow-y:auto}.sidebar .knowledge-nav{margin-bottom:0}.sidebar .nav-label{margin-top:23px}
 .sidebar{overflow:hidden}.sidebar .brand{flex-shrink:0;margin-bottom:26px}.sidebar .knowledge-nav{flex-shrink:0}.menu-title{padding:9px 13px}.sidebar>nav[aria-label="The research journey"]{flex:1;min-height:0;overflow-y:auto}.sidebar .nav-label{margin:14px 10px 10px}.sidebar-bottom{flex-shrink:0;padding-top:15px}.sidebar .phase-nav{padding:7px 10px}
+/* Context sections remain distinct from their neighbouring fields. */
+.context-section{min-width:0;border:1px solid var(--line);border-radius:10px;padding:20px;background:#fafaf6}
+.context-section>h3{font-size:16px;line-height:1.5;margin:0 0 14px}
+.context-section>.form-grid{gap:18px}
+.context-section .field-help{margin-bottom:15px}
+.context-divider{border:0;border-top:1px solid var(--line);margin:22px 0 18px}
+.context-section .audience-notes{display:block;margin:0}
+#workspaceOptions[hidden],#saveState[hidden]{display:none!important}
+.workspace-picker{max-width:280px}
+@media(max-width:700px){.context-section{padding:16px}.context-section>.form-grid{grid-template-columns:1fr}.workspace-picker{max-width:none}}

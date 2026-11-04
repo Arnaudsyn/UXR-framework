@@ -7,10 +7,12 @@
   const newId = () => globalThis.crypto?.randomUUID?.() || `p-${Date.now()}-${Math.random().toString(36).slice(2)}`;
   const blank = () => ({id:newId(),context:{name:'Untitled project',stage:'readiness',problem:'',decision:'',users:'',constraint:'open',access:'unknown',intent:'explore',timing:'',finishDate:''},hasContext:false,notes:{},checks:{},done:[],problemTypes:[],customProblems:[],profiles:[],selectedMethods:[],issues:[],templateNotes:{},methodSelection:{},updatedAt:new Date().toISOString()});
   let db, storageFailed = false, activeTab = 'prepare', workshop = null, timerId = null, toastTimeout;
-  try { const parsed = JSON.parse(localStorage.getItem(KEY)); if(parsed?.version===1 && Array.isArray(parsed.projects) && parsed.projects.length && parsed.projects.every(p=>p?.id && p.context && p.notes && p.checks && Array.isArray(p.done))){db=parsed;} } catch {}
-  if(!db){const p=blank();db={version:1,activeId:p.id,projects:[p]};}
-  if(!db.projects.some(p=>p.id===db.activeId)) db.activeId=db.projects[0].id;
-  const project = () => db.projects.find(p=>p.id===db.activeId);
+  try { const parsed = JSON.parse(localStorage.getItem(KEY)); if(parsed?.version===1 && Array.isArray(parsed.projects) && parsed.projects.every(p=>p?.id && p.context && p.notes && p.checks && Array.isArray(p.done))){db=parsed;} } catch {}
+  if(!db)db={version:1,activeId:null,projects:[]};
+  if(!db.projects.some(p=>p.id===db.activeId))db.activeId=null;
+  let emptyProject=blank();
+  const selectedProject=()=>db.projects.find(p=>p.id===db.activeId);
+  const project=()=>selectedProject()||emptyProject;
   const phaseById = id => phases.find(p=>p.id===id);
   const activityById = id => activities.find(a=>a.id===id);
   const phaseActivities = id => activities.filter(a=>a.phase===id);
@@ -152,16 +154,16 @@
   const phaseStatus = ph => { const list=phaseActivities(ph.id), completed=list.filter(a=>project().done.includes(a.id)).length; return {total:list.length,completed,done:completed===list.length}; };
   const completedStages = () => phases.filter(ph=>phaseStatus(ph).done).length;
   function toast(message){$('#toast').textContent=message;$('#toast').classList.add('visible');clearTimeout(toastTimeout);toastTimeout=setTimeout(()=>$('#toast').classList.remove('visible'),3500);}
-  function save(){project().updatedAt=new Date().toISOString();try{localStorage.setItem(KEY,JSON.stringify(db));storageFailed=false;}catch{storageFailed=true;}updateSaveState();}
-  function updateSaveState(){const el=$('#saveState');el.textContent=storageFailed?'● Not saved · export a backup':'● Saved in this browser';el.classList.toggle('storage-warning',storageFailed);}
+  function save(createProject=true){const p=project();if(createProject&&!selectedProject()){db.projects.push(p);db.activeId=p.id;emptyProject=blank();}if(selectedProject())p.updatedAt=new Date().toISOString();try{localStorage.setItem(KEY,JSON.stringify(db));storageFailed=false;}catch{storageFailed=true;}syncWorkspaceControls();updateSaveState();}
+  function updateSaveState(){const el=$('#saveState');el.hidden=!selectedProject()&&!storageFailed;el.textContent=storageFailed?'● Not saved · export a backup':'● Saved in this browser';el.classList.toggle('storage-warning',storageFailed);}
   function closeDialog(id){document.getElementById(id).close();}
   const contextResetFields=['context','hasContext','problemTypes','customProblems','profiles','selectedMethods','issues','methodSelection'];
   let pendingProjectAction=null,projectUndo=null;
   const cloneData=value=>JSON.parse(JSON.stringify(value));
   const projectSignature=p=>JSON.stringify({...p,updatedAt:null});
-  function showProjectManager(){document.getElementById('managedProjectName').textContent=project().context.name;$('#projectManagerDialog').showModal();}
-  function requestProjectAction(kind){const p=project();pendingProjectAction={kind,id:p.id};$('#projectActionTitle').textContent=kind==='reset'?'Reset project context?':'Delete this project?';$('#projectActionName').textContent=p.context.name;$('#projectActionDetails').innerHTML=kind==='reset'?'<p>Clear the problem choices, custom problems, decision, user profiles and counts, finish date, constraints, selected methods and recorded research difficulties.</p><p><strong>Keep:</strong> the project name, activity notes, template drafts, checklists and completion progress.</p>':'<p>Remove this project from this browser, including its context, notes, template drafts, checklists and progress.</p><p>Export a project file first if you may need it later. Downloaded project files are kept.</p>';$('#projectActionConfirm').textContent=kind==='reset'?'Reset context':'Delete project';$('#projectActionDialog').showModal();}
-  function finishProjectMutation(before,previousUndo,message){save();if(storageFailed){db=before;projectUndo=previousUndo;render();toast('The change could not be saved. Nothing was changed. Export a backup and try again.');return false;}activeTab='prepare';location.hash='#overview';render();window.scrollTo(0,0);toast(message);return true;}
+  function showProjectManager(){if(!selectedProject())return;document.getElementById('managedProjectName').textContent=project().context.name;$('#projectManagerDialog').showModal();}
+  function requestProjectAction(kind){if(!selectedProject())return;const p=project();pendingProjectAction={kind,id:p.id};$('#projectActionTitle').textContent=kind==='reset'?'Reset project context?':'Delete this project?';$('#projectActionName').textContent=p.context.name;$('#projectActionDetails').innerHTML=kind==='reset'?'<p>Clear the problem choices, custom problems, decision, user profiles and counts, finish date, constraints, selected methods and recorded research difficulties.</p><p><strong>Keep:</strong> the project name, activity notes, template drafts, checklists and completion progress.</p>':'<p>Remove this project from this browser, including its context, notes, template drafts, checklists and progress.</p><p>Export a project file first if you may need it later. Downloaded project files are kept.</p>';$('#projectActionConfirm').textContent=kind==='reset'?'Reset context':'Delete project';$('#projectActionDialog').showModal();}
+  function finishProjectMutation(before,previousUndo,message){save(false);if(storageFailed){db=before;projectUndo=previousUndo;render();toast('The change could not be saved. Nothing was changed. Export a backup and try again.');return false;}activeTab='prepare';location.hash='#overview';render();window.scrollTo(0,0);toast(message);return true;}
   function confirmProjectAction(){
     if(!$('#projectActionDialog').open||!pendingProjectAction)return;
     const request=pendingProjectAction;pendingProjectAction=null;
@@ -175,29 +177,34 @@
       projectUndo={kind:'reset',id:p.id,name:p.context.name,previous};
       finishProjectMutation(before,previousUndo,'Project context reset. Notes, drafts and progress were kept.');
     }else if(request.kind==='delete'){
-      const index=db.projects.findIndex(x=>x.id===p.id),removed=cloneData(p);db.projects.splice(index,1);let placeholder=null;
-      if(!db.projects.length){placeholder=blank();db.projects.push(placeholder);}
-      db.activeId=db.projects[Math.min(index,db.projects.length-1)].id;
-      projectUndo={kind:'delete',name:p.context.name,removed,index,placeholder:null};
-      if(finishProjectMutation(before,previousUndo,placeholder?'Project deleted. A blank project is ready.':'Project deleted.'))if(placeholder)projectUndo.placeholder={id:placeholder.id,signature:projectSignature(placeholder)};
+      const index=db.projects.findIndex(x=>x.id===p.id),removed=cloneData(p);db.projects.splice(index,1);
+      db.activeId=db.projects[Math.min(index,db.projects.length-1)]?.id||null;
+      projectUndo={kind:'delete',name:p.context.name,removed,index};
+      finishProjectMutation(before,previousUndo,'Project deleted.');
     }
   }
   function renderProjectUndo(){const host=$('#projectUndo');host.hidden=!projectUndo;host.innerHTML=projectUndo?`<p><strong>${projectUndo.kind==='reset'?'Context reset':'Project deleted'}</strong> ${esc(projectUndo.name)}<small>Undo is available until reload or the next reset / deletion.</small></p><div><button class="button small" data-action="project-undo">Undo ${projectUndo.kind==='reset'?'reset':'deletion'} ↶</button><button class="button small quiet" data-action="dismiss-project-undo" aria-label="Dismiss undo">Dismiss</button></div>`:'';}
   function undoProjectMutation(){
     if(!projectUndo)return;if(workshop){stopTimer();workshop=null;}const record=projectUndo,before=cloneData(db);
     if(record.kind==='reset'){const target=db.projects.find(p=>p.id===record.id);if(!target){projectUndo=null;renderProjectUndo();return;}Object.assign(target,cloneData(record.previous));db.activeId=target.id;}
-    else {if(db.projects.some(p=>p.id===record.removed.id))return;if(record.placeholder){const placeholder=db.projects.find(p=>p.id===record.placeholder.id);if(placeholder&&projectSignature(placeholder)===record.placeholder.signature)db.projects=db.projects.filter(p=>p.id!==placeholder.id);}db.projects.splice(Math.min(record.index,db.projects.length),0,cloneData(record.removed));db.activeId=record.removed.id;}
+    else {if(db.projects.some(p=>p.id===record.removed.id))return;db.projects.splice(Math.min(record.index,db.projects.length),0,cloneData(record.removed));db.activeId=record.removed.id;}
     projectUndo=null;finishProjectMutation(before,record,record.kind==='reset'?'Project context restored.':'Project restored.');
   }
-  function showContext(){const f=$('#contextForm'),p=project();$('#problemChoices').innerHTML=problemOptions.map(pr=>`<label><input type="checkbox" name="problemTypes" value="${pr.id}" data-problem-type ${p.problemTypes.includes(pr.id)?'checked':''}><span>${pr.label}</span></label>`).join('');renderProfileRows(p.profiles);$('#profileDetails').open=p.profiles.length>0||!!p.context.users;f.elements.namedItem('customProblems').value=p.customProblems.join('\n');$('#customProblemDetails').open=p.customProblems.length>0;$('#problemDetails').open=!!p.context.problem;$('#contextConstraints').open=p.context.access!=='unknown'||p.context.constraint!=='open'||p.context.intent!=='explore'||!!p.context.timing;for(const [k,v] of Object.entries(project().context)){if(f.elements.namedItem(k))f.elements.namedItem(k).value=v;}renderProblemPreview(f);contextPlanningPreview();$('#contextDialog').showModal();}
+  function showContext(){const f=$('#contextForm'),p=project();$('#problemChoices').innerHTML=problemOptions.map(pr=>`<label><input type="checkbox" name="problemTypes" value="${pr.id}" data-problem-type ${p.problemTypes.includes(pr.id)?'checked':''}><span>${pr.label}</span></label>`).join('');renderProfileRows(p.profiles);f.elements.namedItem('customProblems').value=p.customProblems.join('\n');$('#customProblemDetails').open=p.customProblems.length>0;$('#problemDetails').open=!!p.context.problem;for(const [k,v] of Object.entries(project().context)){if(f.elements.namedItem(k))f.elements.namedItem(k).value=v;}renderProblemPreview(f);contextPlanningPreview();$('#contextDialog').showModal();}
   function recommendation(){const c=project().context;const limited=c.constraint==='locked'||c.constraint==='partial'||c.access==='none'||c.access==='indirect';let target=phaseById(c.stage)?c.stage:'readiness';return {target,limited,label:limited?'A focused route, with explicit limits':'A standard research route',text:limited?'Start from your current stage. Use constrained-project alignment to agree what can still change, and carry evidence limitations into the final decision.':'Start from your current stage. Reuse what is already known, and revisit earlier activities only where an agreement or evidence is missing.'};}
   function route(){const parts=location.hash.slice(1).split('/');return {kind:parts[0]||'overview',id:parts[1]};}
+  function syncWorkspaceControls(){
+    const selected=selectedProject();
+    $('#projectSelect').innerHTML=`<option value="" ${!selected?'selected':''}>Create or select a project</option>`+db.projects.map(p=>`<option value="${esc(p.id)}" ${p.id===selected?.id?'selected':''}>${esc(p.context.name)}</option>`).join('');
+    $('#workspaceOptions').hidden=!selected;
+    $('#exportButton').disabled=!selected;
+    $('#contextButton').textContent=selected?.hasContext?'Open project context':'Create project context';
+  }
   function updateChrome(){
     renderProjectUndo();
     const p=project(),r=route(),total=activities.length;
-    $('#projectSelect').innerHTML=db.projects.map(x=>`<option value="${esc(x.id)}" ${x.id===p.id?'selected':''}>${esc(x.context.name)}</option>`).join('');
+    syncWorkspaceControls();
     $('.brand').setAttribute('aria-label','Research Compass home');
-    $('#contextButton').innerHTML=`${p.hasContext?'Open project context':'Create project context'} <span aria-hidden="true">↗</span>`;
     $('#phaseNav').innerHTML=phases.map(ph=>{const status=phaseStatus(ph),active=r.id===ph.id||activityById(r.id)?.phase===ph.id;return `<a class="phase-nav ${active?'active':''} ${status.done?'completed':''}" ${active?'aria-current="page"':''} href="#phase/${ph.id}" aria-label="${ph.name}, ${status.completed} of ${status.total} activities completed"><span class="nav-number">${status.done?'✓':phaseNum(ph.id)}</span><span class="nav-phase-label"><span>${ph.name}</span><small class="nav-phase-status">${status.done?'Completed':status.completed?'In progress':'Not started'} · ${status.completed}/${status.total}</small></span></a>`;}).join('');
     document.querySelectorAll('[data-resource-nav]').forEach(a=>{const active=a.dataset.resourceNav===r.kind||(a.dataset.resourceNav==='library'&&r.kind==='guide')||(a.dataset.resourceNav==='templates'&&r.kind==='template');a.classList.toggle('active',active);if(active)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current');});
     $('#progressText').textContent=`${doneCount()} / ${total}`;$('#progress').max=total;$('#progress').value=doneCount();
@@ -211,8 +218,8 @@
   function completionSummary(){const n=doneCount();if(!n)return '';return `<section class="completion-summary ${n===activities.length?'all-complete':''}" aria-label="Project completion"><span class="completion-emblem" aria-hidden="true">${n===activities.length?'✓':'◔'}</span><div><h2>${n===activities.length?'All activities complete':`${n} of ${activities.length} activities complete`}</h2><p>${completedStages()} of ${phases.length} stages completed${n===activities.length?' · Your notes and decisions are ready to export.':' · Green stages are complete. Pick up any remaining activity.'}</p></div></section>`;}
   function renderHome(){
     const p=project(),c=p.context;
-    $('#main').innerHTML=`<section class="hero"><div><p class="eyebrow">METHODS, EVIDENCE & TEAM DECISIONS</p><h1>${p.hasContext?esc(c.name):'Good research starts<br>with a shared direction.'}</h1><p class="hero-description">${p.hasContext?esc(c.decision||problemSummary()||'Find your next step in the research journey.'):'Frame the project, plan your research and turn evidence into decisions with your team.'}</p><div class="hero-buttons"><button class="button primary" data-action="context">${p.hasContext?'Open project context':'Create project context'} <span aria-hidden="true">↗</span></button><button class="button quiet" data-scroll="researchJourney">The research journey <span aria-hidden="true">↓</span></button></div></div><div class="journey-art" aria-hidden="true"><div class="orbit"></div><div class="orbit second"></div><div class="compass">↗</div><span class="art-label a">Start with context</span><span class="art-label b">Leave with a decision ↗</span><span class="art-dot"></span></div></section>
-    ${completionSummary()}${journeySection()}${quickStartSection()}`;
+    $('#main').innerHTML=`<section class="hero"><div><p class="eyebrow">METHODS, EVIDENCE & TEAM DECISIONS</p><h1>${p.hasContext?esc(c.name):'Good research starts<br>with a shared direction.'}</h1><p class="hero-description">${p.hasContext?esc(c.decision||problemSummary()||'Find your next step in the research journey.'):'Frame the project, plan your research and turn evidence into decisions with your team.'}</p><div class="hero-buttons"><button class="button primary" data-action="context">${p.hasContext?'Open project context':'Create project context'}</button><button class="button quiet" data-scroll="researchJourney">The research journey <span aria-hidden="true">↓</span></button></div></div><div class="journey-art" aria-hidden="true"><div class="orbit"></div><div class="orbit second"></div><div class="compass">↗</div><span class="art-label a">Start with context</span><span class="art-label b">Leave with a decision ↗</span><span class="art-dot"></span></div></section>
+    ${completionSummary()}${quickStartSection()}${journeySection()}`;
   }
 
   function activityRow(a,i){const matches=selectedProblems().filter(pr=>pr.activities.includes(a.id));const done=project().done.includes(a.id),hasNotes=Object.values(project().notes[a.id]||{}).some(v=>v.trim());return `<a class="activity-row ${done?'done':''} ${matches.length?'problem-match':''}" href="#activity/${a.id}"><span class="activity-order">${done?'✓':String(i+1).padStart(2,'0')}</span><div><h3>${a.title}</h3><p>${a.description}</p>${matches.length?`<small class="activity-problem-match">Useful for: ${matches.map(pr=>pr.label).join(' · ')}</small>`:''}</div><div class="row-meta"><span class="pill">${hasNotes?'Outputs captured':a.type}</span><span class="duration">~${a.minutes} min</span><span>↗</span></div></a>`;}
@@ -274,7 +281,7 @@
   $('#menuButton').addEventListener('click',()=>{const open=$('#sidebar').classList.toggle('open');$('#menuButton').setAttribute('aria-expanded',String(open));});
   $('#sidebar').addEventListener('click',e=>{if(e.target.closest('a')){$('#sidebar').classList.remove('open');$('#menuButton').setAttribute('aria-expanded','false');}});
   $('#contextForm').addEventListener('submit',e=>{e.preventDefault();const fd=new FormData(e.target),p=project(),values=Object.fromEntries(fd);p.problemTypes=fd.getAll('problemTypes');p.customProblems=String(fd.get('customProblems')||'').split(/\r?\n/);normaliseProblems(p);delete values.problemTypes;delete values.customProblems;p.profiles=normaliseProfiles(readFormProfiles(fd));for(const key of ['profileName','profileDescription','profilePopulation','profileReachable','profileTarget'])delete values[key];project().context=values;normalisePlanning(p);project().context.name=project().context.name.trim()||'Untitled project';project().hasContext=true;save();closeDialog('contextDialog');render();toast('Context saved. Your objectives, method suggestions and activity highlights reflect these problems.');});
-  $('#projectSelect').addEventListener('change',e=>{db.activeId=e.target.value;save();activeTab='prepare';location.hash='#overview';render();});
+  $('#projectSelect').addEventListener('change',e=>{db.activeId=db.projects.some(p=>p.id===e.target.value)?e.target.value:null;save(false);activeTab='prepare';location.hash='#overview';render();});
   $('#newProject').addEventListener('click',()=>{const p=blank();db.projects.push(p);db.activeId=p.id;save();location.hash='#overview';render();showContext();});
   $('#exportButton').addEventListener('click',()=>$('#exportDialog').showModal());
   $('#importButton').addEventListener('click',()=>$('#importFile').click());
@@ -283,5 +290,5 @@
   $('#importFile').addEventListener('change',async e=>{const file=e.target.files[0];if(!file)return;try{if(file.size>10000000)throw Error('This file is too large. Choose a project file under 10 MB.');const restored=validateImport(await file.text());db.projects.push(restored);db.activeId=restored.id;save();closeDialog('exportDialog');location.hash='#overview';render();toast('Project imported with context, notes and progress. Existing projects are unchanged.');}catch(err){toast(err instanceof SyntaxError?'This is not a valid JSON project file. Choose a file exported from Research Compass.':err.message||'Unable to import this project file.');}e.target.value='';});
   window.addEventListener('hashchange',()=>{if(workshop){stopTimer();workshop=null;}activeTab='prepare';render();window.scrollTo(0,0);});
   for(const dialog of document.querySelectorAll('dialog'))dialog.addEventListener('click',e=>{if(e.target===dialog){const r=dialog.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)dialog.close();}});
-  save();render();
+  save(false);render();
 })();
